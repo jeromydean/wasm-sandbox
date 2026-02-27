@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>WasmSandbox.AnimalComponent</RootNamespace>
+
+    <RuntimeIdentifier>wasi-wasm</RuntimeIdentifier>
+    <UseAppHost>false</UseAppHost>
+    <PublishTrimmed>true</PublishTrimmed>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SelfContained>true</SelfContained>
+
+    <NoWarn>$(NoWarn);NU1015;NU1504</NoWarn>
+    <RestoreNoWarn>$(RestoreNoWarn);NU1015</RestoreNoWarn>
+    <SdkAnalysisLevel>9.0.300</SdkAnalysisLevel>
+    <IlcPath Condition="'$(IlcPath)' == ''">$(NuGetPackageRoot)microsoft.dotnet.ilcompiler.llvm\10.0.0-alpha.1.25162.1</IlcPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BytecodeAlliance.Componentize.DotNet.Wasm.SDK" />
+    <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" />
+    <PackageReference Include="runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <WitGeneratedFilesRoot>generated/wit</WitGeneratedFilesRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Wit Update="animal.wit" World="script" />
+  </ItemGroup>
+
+</Project>

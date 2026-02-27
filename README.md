@@ -14,7 +14,9 @@ A .NET 10 console app that compiles C# to WebAssembly using [BytecodeAlliance.Co
 ## Layout
 
 - **`src/Host`** – Console app that builds the script project to WASM and runs it via wasmtime.
-- **`src/WasmScript`** – C# “script” compiled to a WASI component with the Componentize SDK; edit `Program.cs` here to change what runs in WASM.
+- **`src/WasmScript`** – C# “script” compiled to a WASI component with the Componentize SDK; output is captured via stdout.
+- **`src/AnimalComponent`** – **WIT export example**: library component that exports `get-animal` returning a typed record via the component model (the component itself doesn’t serialize to stdout). Uses a `.wit` file and wit-bindgen-generated C#. The current host workaround invokes via wasmtime CLI, which prints the return value to stdout in WAVE, so we still parse that output until .NET has a proper component-invoke API.
+- **`src/ComponentHost`** – Console app that builds AnimalComponent and **invokes** the component export `get-animal()` via `wasmtime run --invoke`, then parses the WAVE result and prints the typed object.
 
 ## Run
 
@@ -54,4 +56,21 @@ The Componentize SDK has a transitive dependency on `Microsoft.DotNet.ILCompiler
 - **`src/Directory.Packages.props`** – `ManagePackageVersionsCentrally=true` and `PackageVersion` entries for the Componentize SDK and the ILCompiler.LLVM packages. That gives the unversioned transitive dependency a version during restore.
 - **`src/WasmScript/WasmScript.csproj`** – `PackageReference` items for those packages **omit** `Version`; the version comes from the central file.
 
-With this, restore and build work from both the command line and Visual Studio. If you add or upgrade packages used by WasmScript, add (or update) their `PackageVersion` in `src/Directory.Packages.props` and keep the corresponding `PackageReference` in the project without a `Version` attribute.
+With this, restore and build work from both the command line and Visual Studio. If you add or upgrade packages used by WasmScript or AnimalComponent, add (or update) their `PackageVersion` in `src/Directory.Packages.props` and keep the corresponding `PackageReference` in the project without a `Version` attribute.
+
+## WIT export: returning a typed object (AnimalComponent)
+
+Instead of serializing to stdout, you can use [WIT](https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md) so the component **exports** a function that returns a typed value.
+
+- **`src/AnimalComponent/animal.wit`** – Defines a record `animal` and an interface `api` with `get-animal: func() -> animal`. World `script` exports that interface.
+- **`src/AnimalComponent/ApiImpl.cs`** – Implements the wit-bindgen-generated `IApi` and returns an `IApi.Animal` instance; the component returns the value through the WIT export, not by writing to stdout.
+- Build: `dotnet build src/AnimalComponent/AnimalComponent.csproj` → `src/AnimalComponent/bin/Debug/net10.0/wasi-wasm/publish/AnimalComponent.wasm`.
+
+**Invoking the export from .NET:** Use **ComponentHost**, which builds AnimalComponent and calls the export via the wasmtime CLI ([wasmtime 33+](https://bytecodealliance.org/articles/invoking-component-functions-in-wasmtime-cli) supports `wasmtime run --invoke 'get-animal()'` for components). ComponentHost parses the WAVE-encoded return value and prints the typed animal:
+
+```bash
+cd src
+dotnet run --project ComponentHost
+```
+
+You need **wasmtime v33.0.0 or newer** for component `--invoke`. The host parses the WAVE record from stdout into a C# object and displays it.

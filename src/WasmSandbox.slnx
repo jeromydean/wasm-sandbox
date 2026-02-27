@@ -1,4 +1,6 @@
 <Solution>
   <Project Path="Host/Host.csproj" />
+  <Project Path="ComponentHost/ComponentHost.csproj" />
   <Project Path="WasmScript/WasmScript.csproj" />
+  <Project Path="AnimalComponent/AnimalComponent.csproj" />
 </Solution>

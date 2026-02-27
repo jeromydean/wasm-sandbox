@@ -1,0 +1,15 @@
+package example:animal;
+
+interface api {
+  record animal {
+    name: string,
+    species: string,
+    age: s32,
+    is-mammal: bool
+  }
+  get-animal: func() -> animal;
+}
+
+world script {
+  export api;
+}

@@ -429,3 +429,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# wit-bindgen generated files (AnimalComponent)
+src/AnimalComponent/generated/wit/

@@ -21,7 +21,7 @@ namespace WasmSandbox.Host
       }
 
       Console.WriteLine("Building C# script to WASM...");
-      (int ExitCode, string Stdout, string Stderr) buildResult = RunDotnet(scriptProjectDir, "build", "-p:RuntimeIdentifier=wasi-wasm", "-c Release");
+      (int ExitCode, string Stdout, string Stderr) buildResult = RunDotnet(scriptProjectDir, "build");
       if (buildResult.ExitCode != 0)
       {
         Console.Error.WriteLine("Build failed:");
@@ -29,7 +29,7 @@ namespace WasmSandbox.Host
         return buildResult.ExitCode;
       }
 
-      // Componentize SDK output: bin/Release/net10.0/wasi-wasm/publish/WasmScript.wasm
+      // Componentize SDK output: bin/Debug/net10.0/wasi-wasm/publish/WasmScript.wasm
       string wasmPath = Path.Combine(scriptProjectDir, "bin", "Debug", "net10.0", "wasi-wasm", "publish", "WasmScript.wasm");
       if (!File.Exists(wasmPath))
       {

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>WasmSandbox.WasmScript</RootNamespace>
+
+    <RuntimeIdentifier>wasi-wasm</RuntimeIdentifier>
+    <UseAppHost>false</UseAppHost>
+    <PublishTrimmed>true</PublishTrimmed>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SelfContained>true</SelfContained>
+    <!-- NU1015: Componentize SDK has transitive PackageReference without version; suppress so VS and CLI both succeed (https://learn.microsoft.com/en-us/dotnet/core/compatibility/sdk/10.0/nu1015-packagereference-version). -->
+    <NoWarn>$(NoWarn);NU1015;NU1504</NoWarn>
+    <RestoreNoWarn>$(RestoreNoWarn);NU1015</RestoreNoWarn>
+    <SdkAnalysisLevel>9.0.300</SdkAnalysisLevel>
+    <!-- Ensure ILC tools path resolves when building from solution (avoid "\tools\ilc" with empty prefix / exit code 3) -->
+    <IlcPath Condition="'$(IlcPath)' == ''">$(NuGetPackageRoot)microsoft.dotnet.ilcompiler.llvm\10.0.0-alpha.1.25162.1</IlcPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Versions from src/Directory.Packages.props (CPM) so transitive refs resolve in VS restore -->
+    <PackageReference Include="BytecodeAlliance.Componentize.DotNet.Wasm.SDK" />
+    <PackageReference Include="Microsoft.DotNet.ILCompiler.LLVM" />
+    <PackageReference Include="runtime.win-x64.Microsoft.DotNet.ILCompiler.LLVM" />
+  </ItemGroup>
+</Project>

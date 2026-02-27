@@ -1,0 +1,38 @@
+<Project>
+  <!-- Set WASI_SDK_PATH so Microsoft.DotNet.ILCompiler.LLVM can find the WASI SDK.
+       Override WasiSdkPath in the project or environment if your SDK is elsewhere. -->
+  <PropertyGroup>
+    <!-- Prefer env WASI_SDK_PATH, then MSBuild WasiSdkPath, then default location -->
+    <WasiSdkPath Condition="'$(WasiSdkPath)' == ''">$([System.Environment]::GetEnvironmentVariable('WASI_SDK_PATH'))</WasiSdkPath>
+    <WasiSdkPath Condition="'$(WasiSdkPath)' == ''">$(USERPROFILE)\.wasi-sdk\wasi-sdk-29.0</WasiSdkPath>
+  </PropertyGroup>
+
+  <Target Name="CheckWasiSdkPath" BeforeTargets="SetWasiSdkPathForBuild">
+    <Error
+      Condition="!Exists('$(WasiSdkPath)\share\wasi-sysroot')"
+      Text="WASI SDK not found at '$(WasiSdkPath)'. Install it from https://github.com/WebAssembly/wasi-sdk/releases (e.g. wasi-sdk-29.0 for Windows), extract to $(USERPROFILE)\.wasi-sdk\wasi-sdk-29.0, or set property WasiSdkPath / env WASI_SDK_PATH to your SDK root (the folder that contains share\wasi-sysroot)." />
+  </Target>
+
+  <UsingTask
+    TaskName="SetWasiSdkPath"
+    TaskFactory="RoslynCodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Path ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+        if (!string.IsNullOrEmpty(Path) && System.IO.Directory.Exists(Path))
+        {
+          System.Environment.SetEnvironmentVariable("WASI_SDK_PATH", Path, System.EnvironmentVariableTarget.Process);
+        }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="SetWasiSdkPathForBuild" BeforeTargets="Build">
+    <SetWasiSdkPath Path="$(WasiSdkPath)" />
+  </Target>
+</Project>
